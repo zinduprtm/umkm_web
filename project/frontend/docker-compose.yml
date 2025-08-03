@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Frontend application
+  umkm-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - umkm-network
+
+  # PostgreSQL database (optional - if not using Supabase)
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: umkm_platform
+      POSTGRES_USER: umkm_user
+      POSTGRES_PASSWORD: umkm_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - umkm-network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - umkm-network
+
+volumes:
+  postgres_data:
+
+networks:
+  umkm-network:
+    driver: bridge
